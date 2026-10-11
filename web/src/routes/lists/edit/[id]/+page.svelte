@@ -29,6 +29,7 @@
     import { trails_show, trails_update } from "$lib/stores/trail_store";
     import { currentUser } from "$lib/stores/user_store.js";
     import { getFileURL } from "$lib/util/file_util.js";
+    import { buildListTrailSearchOptions } from "$lib/util/list_trail_search";
     import {
         formatDistance,
         formatElevation,
@@ -166,22 +167,20 @@
 
     async function search(q: string) {
         try {
-            const r = await searchTrails(q, {
-                filter: `author = ${$currentUser?.actor} OR public = true`,
-                sort: ["name:desc"],
-                limit: 3,
-            });
+            const r = await searchTrails(
+                q,
+                buildListTrailSearchOptions(
+                    $currentUser?.actor,
+                    $formData.trails ?? [],
+                ),
+            );
 
-            searchDropdownItems = r
-                .filter(
-                    (h: TrailSearchResult) => !$formData.trails?.includes(h.id),
-                )
-                .map((t) => ({
-                    text: t.name,
-                    description: `${t.location ?? "-"}`,
-                    value: t.id,
-                    icon: "route",
-                }));                
+            searchDropdownItems = r.map((t: TrailSearchResult) => ({
+                text: t.name,
+                description: `${t.location ?? "-"}`,
+                value: t.id,
+                icon: "route",
+            }));
         } catch (e) {
             console.error(e);
         }
