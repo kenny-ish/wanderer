@@ -4,6 +4,18 @@
         value: any;
         icon?: string;
     };
+
+    export function filterSelectedItems(
+        items: ComboboxItem[],
+        selected: ComboboxItem[],
+        multiple: boolean,
+    ) {
+        return multiple
+            ? items.filter(
+                  (item) => !selected.some((value) => value.text == item.text),
+              )
+            : items;
+    }
 </script>
 
 <script lang="ts">
@@ -45,10 +57,14 @@
 
     let inputValue: string = $state("");
 
+    let visibleItems = $derived(
+        filterSelectedItems(items, value as ComboboxItem[], multiple),
+    );
+
     let dropDownOpen = $derived(
         ((multiple && inputValue.length > 0) ||
             (!multiple && (value as string)?.length > 0)) &&
-            items.length > 0 &&
+            visibleItems.length > 0 &&
             searching,
     );
 
@@ -191,7 +207,7 @@
             class:none={!dropDownOpen}
             style="z-index: 1001"
         >
-            {#each items as item}
+            {#each visibleItems as item}
                 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
                 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
                 <li

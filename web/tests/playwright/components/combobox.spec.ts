@@ -69,6 +69,21 @@ for (const dev of [true, false]) {
             expect(errors).toEqual([]);
         });
 
+        test('hides selected items from multiple suggestions', async ({ page }) => {
+            await mount(page, ['Alpine', 'Alpine lake']);
+            const multiple = page.getByTestId('multiple');
+
+            await multiple.locator('input').fill('Alpine');
+            await expect(multiple.locator('.menu-item')).toHaveText([
+                'Alpine',
+                'Alpine lake',
+            ]);
+            await multiple.locator('.menu-item').first().click();
+
+            await multiple.locator('input').fill('Alpine');
+            await expect(multiple.locator('.menu-item')).toHaveText('Alpine lake');
+        });
+
         test('updates its own highlighting without mutating another menu', async ({ page }) => {
             const errors = await mount(page, ['Alpine alpine']);
             await page.evaluate(() => {
